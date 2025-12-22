@@ -1,0 +1,74 @@
+version: "3.9"
+
+services:
+  postgresql:
+    image: postgres:16
+    container_name: temporal-postgresql
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal
+    ports:
+      - "5432:5432"
+    networks:
+      - temporal-network
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  temporal:
+    image: temporalio/auto-setup:latest
+    container_name: temporal
+    depends_on:
+      - postgresql
+    environment:
+      # Use Postgres as primary + visibility store
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=postgresql
+      # Optional but explicit DB names
+      - DBNAME=temporal
+      - VISIBILITY_DBNAME=temporal_visibility
+    ports:
+      - "7233:7233"     # gRPC for SDK (host: localhost:7233)
+    networks:
+      - temporal-network
+
+  temporal-ui:
+    image: temporalio/ui:latest
+    container_name: temporal-ui
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+    ports:
+      - "5050:8080"     # UI at http://localhost:8080
+    networks:
+      - temporal-network
+
+  # OPTIONAL: containerized worker (you can ignore this while iterating locally)
+  python-worker:
+    build: ./python-worker
+    container_name: travel-worker
+    depends_on:
+      - temporal
+      - redis
+    env_file:
+      - env      # passes env vars from root env into the container
+    environment:
+      # override Temporal address to use service name inside the Docker network
+      - TEMPORAL_ADDRESS=temporal:7233
+    networks:
+      - temporal-network
+  redis:
+    image: redis:7
+    command: ["redis-server"]
+    expose:
+      - "6379"
+
+networks:
+  temporal-network:
+    driver: bridge
+
+volumes:
+  pgdata:

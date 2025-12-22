@@ -1,0 +1,18 @@
+/* --- Increase assistant message avatar gutter --- */
+.ai-message > span:first-child {
+  width: 44px !important;
+  min-width: 44px !important;
+}
+
+/* If the avatar is an img inside that first span, scale it up */
+.ai-message > span:first-child img {
+  width: 40px !important;
+  height: 40px !important;
+  object-fit: cover;
+}
+
+/* If Chainlit wraps avatar in a nested span/div instead of img directly */
+.ai-message > span:first-child * {
+  width: 40px;
+  height: 40px;
+}

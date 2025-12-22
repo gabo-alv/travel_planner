@@ -1,0 +1,20 @@
+[project]
+name = "travel-temporal-worker"
+version = "0.1.0"
+description = "Temporal worker orchestrating Gemini/Autogen travel planning"
+requires-python = ">=3.11"
+
+dependencies = [
+  "temporalio==1.20.0",
+  "autogen-agentchat>=0.2.27",
+  "autogen-ext[web-surfer]>=0.0.1",
+  "python-dotenv",
+  "openai>=1.0.0",
+  "tiktoken==0.7.0",
+  "googlemaps>=4.10.0",
+  "pydantic>=2.12.5",
+  "chainlit>=2.9.3",
+  "fastapi>=0.124.0",
+  "redis>=7.1.0",
+]
+
