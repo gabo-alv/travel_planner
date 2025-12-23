@@ -13,7 +13,7 @@ load_dotenv()
 
 def _ensure_gemini_key() -> None:
     if not os.getenv("GEMINI_API_KEY"):
-        raise RuntimeError("GEMINI_API_KEY env var is required for Gemini.")
+        raise RuntimeError("GEMINI_API_KEY .env var is required for Gemini.")
 
 
 async def run_single_agent(

@@ -331,13 +331,27 @@ class SelfImprovingDestinationWorkflow:
         await self._send_user_message(
             type="message",
             message=summary,
-            is_final=True
+            is_final=False
         )
-        self._pending_user_reply = None
         self.context.main_chat_history.append(
             ChatMessageHistory(source="Lorenzo", message=summary)
         )
-    async def _send_user_message(self, type: str, message: str, is_final: bool, title: Optional[str] = None) -> None:
+        
+        # Send POI data for map display
+        poi_data = [poi.model_dump() for poi in total_selected_pois]
+        await self._send_pois(
+            is_final=True,
+            poi_data=poi_data
+        )
+        self._pending_user_reply = None
+
+    async def _send_user_message(
+        self, 
+        type: str, 
+        message: str, 
+        is_final: bool, 
+        title: Optional[str] = None,
+    ) -> None:
          await workflow.execute_activity(
                 publish_clientli_message_activity,
                 ClientLiEvent(
@@ -345,8 +359,25 @@ class SelfImprovingDestinationWorkflow:
                     type=type,
                     content=message,
                     is_final=is_final,
-                    title=title
+                    title=title,
                 ),
+                start_to_close_timeout=timedelta(minutes=2),
+            )
+
+
+    async def _send_pois(self, poi_data: List[Dict[str, Any]], is_final: bool) -> None:
+            event = ClientLiEvent(
+                session_id=self.context.user_session_id,
+                type="poi_map",
+                content="",
+                is_final=is_final,
+                title=None,
+                poi_data=poi_data
+            )
+            
+            await workflow.execute_activity(
+                publish_clientli_message_activity,
+                event,
                 start_to_close_timeout=timedelta(minutes=2),
             )
 

@@ -4,3 +4,4 @@ _pycache_
 *.pyc
 *.venv
 *.DS_Store
+.files

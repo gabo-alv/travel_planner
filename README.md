@@ -47,11 +47,19 @@ This system uses a three-layer architecture:
   - Model client (Gemini or OpenAI)
   - Structured output support via Pydantic models
 
-#### 3. Tools Calls:
+#### 3. UI Layer (Chainlit + Custom Elements)
+
+**Chainlit** provides the chat interface with support for custom React components:
+- **Custom Elements**: React components (JSX) for rich UI interactions
+- **POIMap Element**: Google Maps JavaScript API integration for interactive map display
+- **Real-time Updates**: Redis pub/sub for workflow status updates
+- **Custom Event Handling**: Specialized handlers for different UI element types
+
+#### 4. Tools Calls:
 
 Tools are modeled as just regular code wrapped in Temporal Activities. They will be re-run (depending on Temporal's workflow setup) gracefully if they fail, and the number of retries or timeouts can be controlled at runtime
 
-#### 4. Agents Lifecycle
+#### 5. Agents Lifecycle
 
 In this project, each agent (or team of agents) is created and destroyed per Activity call. This gives an important benefit as they don't have to be programmatically controlled based on sessions or on each API call.
 
@@ -69,7 +77,7 @@ There is a lot to explore on AutoGen [Memory solutions](https://microsoft.github
 The intention of the "Itinerary Critic" agent was to explore realtime web retrieval. A more robust solution would be to have these source of knowledge already downloaded (e.g on a simple S3 bucket) and use something like the [RAG example](https://microsoft.github.io/autogen/stable//user-guide/agentchat-user-guide/memory.html#building-a-simple-rag-agent) from AutoGen docs.
 This should be feasible and both could play together (the documents could be retrieved at runtime via deterministic crawlers or WebModalSurfer) and stored to the knowledge base as needed, however, predownloading would be a better solution for this example with limited data to crawl
 
-#### 5. LLM Integration
+#### 6. LLM Integration
 
 **Gemini Integration:**
 - Uses Google Gemini models via OpenAI-compatible API endpoint
@@ -138,8 +146,8 @@ The main workflow (`SelfImprovingDestinationWorkflow`) implements a self-improvi
    - **Accept**: Results are good enough → proceed to summary
    - **Refine**: Results need improvement → adjust parameters and loop back
 6. **POI Summary** - Generates final itinerary summary
-7. **Circular Conversation** - Workflow continues, allowing users to modify or make new requests
-8.  TODO: Add a custom Chainlit element to display the POIs in the chat
+7. **Interactive Map Display** - Custom Chainlit element renders POIs on Google Maps with markers, info windows, and auto-zoom
+8. **Circular Conversation** - Workflow continues, allowing users to modify or make new requests
 
 **Key Features:**
 - **Self-improving**: Review agent learns from previous iterations
@@ -296,6 +304,9 @@ travel_planner/
 │   ├── autogen_gemini.py     # Gemini client configuration
 │   ├── app/
 │   │   └── server.py         # Chainlit web server
+│   ├── public/
+│   │   └── elements/
+│   │       └── POIMap.jsx    # Custom Google Maps element
 │   ├── pois/                 # POI workflow module
 │   │   ├── workflow_poi_self_improving.py  # Main POI workflow
 │   │   ├── poi_agents.py                  # POI-related agents
@@ -391,16 +402,24 @@ The MultimodalWebSurfer - Summary Assistant architecture enables dynamic website
 - **Termination Control**: Automatically stops when sufficient information is gathered
 - **Guardrails to prevent search engine crawling:** It's against the ToS of Bing and Google, and often results in captchas / IP banning if not in place (MultimodalWebSurfer *by default* uses Bing heavily without it)
 
-### 6. Next steps:
+### 6. Interactive POI Map Display
+
+Custom Chainlit element for visualizing POIs:
+
+- **Google Maps Integration**: Interactive map with all discovered POIs
+- **Custom Markers**: Numbered markers corresponding to each POI location
+- **Info Windows**: Tap markers to see detailed information (name, photo, rating, address, description)
+- **Auto-Zoom**: Map automatically fits all POIs with appropriate margins for optimal viewing
+
+### 7. Next steps:
  
-- We alredy successfully built a "search profile" or "itinerary summary" during the initial `chat_flow()`. The intention for asking dates and budget was to have an online search for hotels scrapping either known sites (like booking) or WebModalSurfer + Google CSE  
-- Likewise, the POIs search could be enhanced with online searches on TripAdvisor or similar websites, but then we would require to find the GPS location for any new activity or POI found online (see bellow)
-- Build and display a map showing the itinerary using custom Elements in Chainlit
+- We already successfully built a "search profile" or "itinerary summary" during the initial `chat_flow()`. The intention for asking dates and budget was to have an online search for hotels scrapping either known sites (like booking) or WebModalSurfer + Google CSE  
+- Likewise, the POIs search could be enhanced with online searches on TripAdvisor or similar websites, but then we would require to find the GPS location for any new activity or POI found online
 - Consolidated tokens budget tracking and storage in a database, implementing token limits, throttling, etc
 - Offloading the Context from the Workflow using [agent state](https://microsoft.github.io/autogen/stable//user-guide/agentchat-user-guide/tutorial/state.html). Check trade-offs of complexity vs having the state in Temporals Workflow, which is persistent by design.
 - If we keep the state on the Workflow, then state persisting and restoring (using regular databases or even S3 buckets) on session start / termination, if we add an auth layer.
 
-### 7. Testing
+### 8. Testing
 
 Testing is largely missing in this toy-project currently. Here are some possible testing strategies (feel free to suggest more):
 

@@ -179,7 +179,7 @@ async def critize_user_itinerary(itinerary: str, context: list[CritiqueItinerary
 
     llm_client = OpenAIChatCompletionClient(
     model="gpt-5.2",
-    api_key=os.environ["OPEN_AI_API_KEY"],  # note: env var name
+    api_key=os.environ["OPEN_AI_API_KEY"],  # note: .env var name
     model_info={
         "vision": False,
        "function_calling": True,
@@ -425,7 +425,7 @@ async def travel_advisory_lookup(
     )
     summarizer_client = OpenAIChatCompletionClient(
         model="gpt-4o-mini",
-        api_key=os.environ["OPEN_AI_API_KEY"],  # note: env var name
+        api_key=os.environ["OPEN_AI_API_KEY"],
         model_info={
             "vision": False,
             "function_calling": False,

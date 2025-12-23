@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from temporalio import activity
 
@@ -131,6 +131,4 @@ async def generate_update_title_activity(
 async def publish_clientli_message_activity(event: ClientLiEvent) -> None:
     redis = get_redis()
     channel = f"chainlit:poi:events:{event.session_id}"
-
-    # Publish JSON payload
     redis.publish(channel, event.model_dump_json())

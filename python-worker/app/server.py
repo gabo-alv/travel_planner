@@ -70,6 +70,24 @@ async def consume_pubsub_events(session_id: str) -> None:
                             step.output = event.content
                             await step.update()
                             continue
+                    case "poi_map":
+                        # Display POI map using CustomElement
+                        if event.poi_data:
+                            import os
+                            api_key = os.getenv("GOOGLE_PLACES_API_KEY", "")
+                            
+                            map_element = cl.CustomElement(
+                                name="POIMap",
+                                props={
+                                    "pois": event.poi_data,
+                                    "apiKey": api_key
+                                }
+                            )
+                            await cl.Message(content="", elements=[map_element], author="assistant").send()
+                        
+                        if event.is_final:
+                            break
+                        continue
                     case _:
                         # unknown / stop
                         break
@@ -108,9 +126,6 @@ def stop_pubsub_listener(session_id: str) -> None:
         task.cancel()
 
 
-# ----------------------------
-# Temporal workflow start (replace if running)
-# ----------------------------
 async def start_or_replace_workflow(session_id: str) -> None:
    
     client = await get_temporal_client()

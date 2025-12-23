@@ -65,6 +65,7 @@ class ClientLiEvent(BaseModel):
     content: str
     is_final: bool
     title: Optional[str] = Field(default=None, description="Optional title for update messages")
+    poi_data: Optional[List[Dict[str, Any]]] = Field(default=None, description="POI data for map display")
 
 class ChatMessageHistory(BaseModel):
     source: str

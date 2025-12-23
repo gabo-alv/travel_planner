@@ -54,7 +54,7 @@ services:
       - temporal
       - redis
     env_file:
-      - env      # passes env vars from root env into the container
+      - .env      # passes .env vars from root .env into the container
     environment:
       # override Temporal address to use service name inside the Docker network
       - TEMPORAL_ADDRESS=temporal:7233
